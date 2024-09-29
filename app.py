@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from pyrogram import Client, filters
 from pytube import YouTube
 import instaloader
-import time
 
 # Load environment variables
 load_dotenv()
@@ -14,7 +13,6 @@ API_ID = os.getenv("API_ID")
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 INSTAGRAM_USERNAME = os.getenv("INSTAGRAM_USERNAME")
-INSTAGRAM_PASSWORD = os.getenv("INSTAGRAM_PASSWORD")
 
 # Configure logging
 logging.basicConfig(
@@ -32,7 +30,7 @@ def start(client, message):
 def download_youtube(client, message):
     url = message.text.strip()
     logging.info(f"Attempting to download video from URL: {url}")
-    
+
     try:
         yt = YouTube(url)
         video = yt.streams.get_highest_resolution()
@@ -48,9 +46,16 @@ def download_youtube(client, message):
 @app.on_message(filters.regex(r'https?://(www\.)?instagram\.com'))
 def download_instagram(client, message):
     loader = instaloader.Instaloader()
-    loader.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)  # Authenticate
 
-    url = message.text
+    try:
+        loader.load_session_from_file(INSTAGRAM_USERNAME)  # Load your saved session
+    except FileNotFoundError:
+        message.reply("Session file not found. Please log in manually first.")
+        return
+
+    url = message.text.strip()
+    logging.info(f"Attempting to download Instagram post from URL: {url}")
+
     try:
         shortcode = url.split("/")[-2]
         post = instaloader.Post.from_shortcode(loader.context, shortcode)
