@@ -42,8 +42,12 @@ async def start(client, message):
 @app.on_message(filters.regex(r'https?://(www\.)?youtube\.com|youtu\.?be'))
 async def download_youtube(client, message):
     url = message.text.strip()
-    video_id = url.split('v=')[-1] if 'v=' in url else url.split('/')[-1]
-    
+    video_id = get_video_id(url)
+
+    if not video_id:
+        await send_message(message.chat.id, "Invalid YouTube URL.")
+        return
+
     logging.info(f"Attempting to download YouTube video from URL: {url}")
     
     # YouTube API call
