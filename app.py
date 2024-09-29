@@ -1,11 +1,14 @@
 #FLEX
 import os
 import logging
+import time
+import asyncio
 import requests
 from dotenv import load_dotenv
 from pyrogram import Client, filters
 from pytube import YouTube
 import instaloader
+from pyrogram.errors import FloodWait
 
 # Load environment variables
 load_dotenv()
@@ -25,12 +28,21 @@ logging.basicConfig(
 
 app = Client("FLEXRobo", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
+async def send_message(chat_id, text):
+    while True:
+        try:
+            await app.send_message(chat_id, text)
+            break  # Exit the loop if sending is successful
+        except FloodWait as e:
+            logging.warning(f"Flood wait: sleeping for {e.x} seconds.")
+            await asyncio.sleep(e.x)  # Wait for the required time
+
 @app.on_message(filters.command("start"))
-def start(client, message):
-    message.reply("Welcome! Send me a YouTube or Instagram link to download videos.")
+async def start(client, message):
+    await send_message(message.chat.id, "Welcome! Send me a YouTube or Instagram link to download videos.")
 
 @app.on_message(filters.regex(r'https?://(www\.)?youtube\.com|youtu\.?be'))
-def download_youtube(client, message):
+async def download_youtube(client, message):
     url = message.text.strip()
     video_id = url.split('v=')[-1] if 'v=' in url else url.split('/')[-1]
     
@@ -41,7 +53,7 @@ def download_youtube(client, message):
     response = requests.get(api_url)
     
     if response.status_code != 200:
-        message.reply("Error fetching video details. Please check the video URL.")
+        await send_message(message.chat.id, "Error fetching video details. Please check the video URL.")
         return
 
     try:
@@ -49,15 +61,15 @@ def download_youtube(client, message):
         video = yt.streams.get_highest_resolution()
         logging.info(f"Found video: {yt.title}, downloading...")
         video_file = video.download(filename='video.mp4')
-        client.send_document(message.chat.id, video_file)
+        await app.send_document(message.chat.id, video_file)
         os.remove(video_file)
         logging.info(f"Downloaded YouTube video: {url}")
     except Exception as e:
         logging.error(f"Error downloading YouTube video: {str(e)}")
-        message.reply(f"Error: {str(e)}")
+        await send_message(message.chat.id, f"Error: {str(e)}")
 
 @app.on_message(filters.regex(r'https?://(www\.)?instagram\.com'))
-def download_instagram(client, message):
+async def download_instagram(client, message):
     loader = instaloader.Instaloader()
 
     # Automated login
@@ -66,7 +78,7 @@ def download_instagram(client, message):
         logging.info(f"Logged in to Instagram as {INSTAGRAM_USERNAME}")
     except instaloader.exceptions.LoginException as e:
         logging.error(f"Login failed: {str(e)}")
-        message.reply("Login failed. Please check your credentials.")
+        await send_message(message.chat.id, "Login failed. Please check your credentials.")
         return
 
     url = message.text.strip()
@@ -79,14 +91,14 @@ def download_instagram(client, message):
 
         video_file = f"{shortcode}.mp4"
         if os.path.exists(video_file):
-            client.send_document(message.chat.id, video_file)
+            await app.send_document(message.chat.id, video_file)
             os.remove(video_file)
             logging.info(f"Downloaded Instagram post: {url}")
         else:
-            message.reply("No video found in this post.")
+            await send_message(message.chat.id, "No video found in this post.")
     except Exception as e:
         logging.error(f"Error downloading Instagram post: {str(e)}")
-        message.reply(f"Error: {str(e)}")
+        await send_message(message.chat.id, f"Error: {str(e)}")
 
 if __name__ == "__main__":
     logging.info("Bot is starting...")
