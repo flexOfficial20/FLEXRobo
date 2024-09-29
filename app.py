@@ -51,11 +51,16 @@ def download_instagram(client, message):
 
     try:
         shortcode = url.split("/")[-2]  # Extract shortcode from URL
-        loader.download_post(loader.check_post(shortcode), target='')
+        post = instaloader.Post.from_shortcode(loader.context, shortcode)
+        loader.download_post(post, target='')  # Downloads the post to current directory
         video_file = f"{shortcode}.mp4"  # Adjust according to your saving logic
-        client.send_document(message.chat.id, video_file)
-        os.remove(video_file)  # Cleanup after sending
-        logging.info(f"Downloaded and sent Instagram post: {url}")
+
+        if os.path.exists(video_file):
+            client.send_document(message.chat.id, video_file)
+            os.remove(video_file)  # Cleanup after sending
+            logging.info(f"Downloaded and sent Instagram post: {url}")
+        else:
+            message.reply("No video found in this post.")
     except Exception as e:
         logging.error(f"Error downloading Instagram post: {str(e)}")
         message.reply(f"Error: {str(e)}")
