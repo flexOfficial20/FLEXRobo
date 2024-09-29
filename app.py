@@ -47,14 +47,23 @@ def download_youtube(client, message):
 @app.on_message(filters.regex(r'https?://(www\.)?instagram\.com'))
 def download_instagram(client, message):
     loader = instaloader.Instaloader()
-    url = message.text
+    
+    # Log in with your Instagram credentials
+    try:
+        loader.login("flexbotsopx", "FLEXBOTSOPXX")  # Update with your credentials
+    except Exception as e:
+        logging.error(f"Login failed: {str(e)}")
+        message.reply("Failed to log in to Instagram.")
+        return
 
+    url = message.text
     try:
         shortcode = url.split("/")[-2]  # Extract shortcode from URL
         post = instaloader.Post.from_shortcode(loader.context, shortcode)
-        loader.download_post(post, target='')  # Downloads the post to current directory
-        video_file = f"{shortcode}.mp4"  # Adjust according to your saving logic
-
+        loader.download_post(post, target='')
+        
+        # Check for the video file and send it
+        video_file = f"{shortcode}.mp4"
         if os.path.exists(video_file):
             client.send_document(message.chat.id, video_file)
             os.remove(video_file)  # Cleanup after sending
