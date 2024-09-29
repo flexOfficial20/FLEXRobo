@@ -1,8 +1,6 @@
 #FLEX
 import os
 import logging
-import time
-import asyncio
 import requests
 from dotenv import load_dotenv
 from pyrogram import Client, filters
@@ -32,10 +30,10 @@ async def send_message(chat_id, text):
     while True:
         try:
             await app.send_message(chat_id, text)
-            break  # Exit the loop if sending is successful
+            break
         except FloodWait as e:
             logging.warning(f"Flood wait: sleeping for {e.x} seconds.")
-            await asyncio.sleep(e.x)  # Wait for the required time
+            await asyncio.sleep(e.x)
 
 @app.on_message(filters.command("start"))
 async def start(client, message):
