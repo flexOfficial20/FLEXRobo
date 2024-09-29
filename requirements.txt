@@ -3,4 +3,5 @@ pyrogram
 python-dotenv
 pytube
 instaloader
+requests
 TgCrypto
