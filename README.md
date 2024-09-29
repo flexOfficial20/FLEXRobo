@@ -16,13 +16,10 @@ cd FLEXRobo
 pip install -U -r requirements.txt
 
 
+### Summary
 
-### Summary of Steps
+1. **Add logging** to help debug issues.
+2. **Ensure the bot runs continuously** with `app.run()`.
+3. **Check and fill in your credentials** in the `.env` file.
 
-1. **Create the project structure** with the above files.
-2. **Fill in your API credentials** in the `.env` file.
-3. **Push the project to your GitHub repository**.
-4. **Add the deploy button** in the `README.md`.
-5. **Test the deploy button** to ensure it works as intended.
-
-This complete setup will help you deploy your **FLEXRobo** application easily to Heroku directly from your GitHub repository. If you have any questions or need further assistance, feel free to ask!
+This complete setup will help you deploy and run your Telegram bot on Heroku effectively. If you have any further questions or need assistance, feel free to ask!
