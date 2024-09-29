@@ -1,0 +1,33 @@
+{
+  "name": "FLEXRobo",
+  "description": "A Telegram bot to download videos and reels.",
+  "env": {
+    "API_ID": {
+      "description": "Your Telegram API ID",
+      "required": true
+    },
+    "API_HASH": {
+      "description": "Your Telegram API Hash",
+      "required": true
+    },
+    "BOT_TOKEN": {
+      "description": "Your Telegram Bot Token",
+      "required": true
+    }
+  },
+  "scripts": {
+    "postdeploy": "heroku run python app.py"
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+  "addons": [],
+  "buildpacks": [
+    {
+      "url": "heroku-community/apt"
+    }
+  ]
+}
