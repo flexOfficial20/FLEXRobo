@@ -30,10 +30,13 @@ def start(client, message):
 
 @app.on_message(filters.regex(r'https?://(www\.)?youtube\.com|youtu\.?be'))
 def download_youtube(client, message):
-    url = message.text
+    url = message.text.strip()
+    logging.info(f"Attempting to download video from URL: {url}")
+    
     try:
         yt = YouTube(url)
         video = yt.streams.get_highest_resolution()
+        logging.info(f"Found video: {yt.title}, downloading...")
         video_file = video.download(filename='video.mp4')
         client.send_document(message.chat.id, video_file)
         os.remove(video_file)
