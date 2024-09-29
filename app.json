@@ -1,5 +1,5 @@
 {
-  "name": "FLEXRobo",
+  "name": "flexrobo",
   "description": "A Telegram bot to download videos and reels.",
   "env": {
     "API_ID": {
