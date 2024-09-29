@@ -1,11 +1,6 @@
-heroku login
-heroku create FLEXRobo
-# Ensure heroku.yml is in your project directory
-heroku stack:set container --app FLEXRobo
-git add heroku.yml
-git commit -m "Add Heroku configuration"
-git push heroku main
-heroku config:set API_ID="YOUR_API_ID" --app FLEXRobo
-heroku config:set API_HASH="YOUR_API_HASH" --app FLEXRobo
-heroku config:set BOT_TOKEN="YOUR_BOT_TOKEN" --app FLEXRobo
-heroku logs --tail --app FLEXRobo
+build:
+  docker:
+    web: Dockerfile
+
+run:
+  web: python app.py
