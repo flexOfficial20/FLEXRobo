@@ -1,6 +1,7 @@
 #FLEX
 import os
 import logging
+import requests
 from dotenv import load_dotenv
 from pyrogram import Client, filters
 from pytube import YouTube
@@ -13,6 +14,8 @@ API_ID = os.getenv("API_ID")
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 INSTAGRAM_USERNAME = os.getenv("INSTAGRAM_USERNAME")
+INSTAGRAM_PASSWORD = os.getenv("INSTAGRAM_PASSWORD")
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
 # Configure logging
 logging.basicConfig(
@@ -29,7 +32,17 @@ def start(client, message):
 @app.on_message(filters.regex(r'https?://(www\.)?youtube\.com|youtu\.?be'))
 def download_youtube(client, message):
     url = message.text.strip()
-    logging.info(f"Attempting to download video from URL: {url}")
+    video_id = url.split('v=')[-1] if 'v=' in url else url.split('/')[-1]
+    
+    logging.info(f"Attempting to download YouTube video from URL: {url}")
+    
+    # YouTube API call
+    api_url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={YOUTUBE_API_KEY}"
+    response = requests.get(api_url)
+    
+    if response.status_code != 200:
+        message.reply("Error fetching video details. Please check the video URL.")
+        return
 
     try:
         yt = YouTube(url)
@@ -47,10 +60,13 @@ def download_youtube(client, message):
 def download_instagram(client, message):
     loader = instaloader.Instaloader()
 
+    # Automated login
     try:
-        loader.load_session_from_file(INSTAGRAM_USERNAME)  # Load your saved session
-    except FileNotFoundError:
-        message.reply("Session file not found. Please log in manually first.")
+        loader.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)  # Perform automatic login
+        logging.info(f"Logged in to Instagram as {INSTAGRAM_USERNAME}")
+    except instaloader.exceptions.LoginException as e:
+        logging.error(f"Login failed: {str(e)}")
+        message.reply("Login failed. Please check your credentials.")
         return
 
     url = message.text.strip()
